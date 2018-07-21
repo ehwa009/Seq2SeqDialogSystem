@@ -185,7 +185,7 @@ def main(_):
     dialog = Dialog()
 
     if FLAGS.data_path and FLAGS.voc_test:
-        print("다음 데이터로 어휘 사전을 테스트합니다.", FLAGS.data_path)
+        print("test vocab dic from following directory: ", FLAGS.data_path)
         dialog.load_vocab(FLAGS.voc_path)
         dialog.load_examples(FLAGS.data_path)
 
@@ -195,7 +195,7 @@ def main(_):
         print(target)
 
     elif FLAGS.data_path and FLAGS.voc_build:
-        print("다음 데이터에서 어휘 사전을 생성합니다.", FLAGS.data_path)
+        print("creating vocab dictionary from following dir: ", FLAGS.data_path)
         dialog.build_vocab(FLAGS.data_path, FLAGS.voc_path)
 
     elif FLAGS.voc_test:

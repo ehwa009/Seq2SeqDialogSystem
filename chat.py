@@ -25,10 +25,23 @@ class Chatbot:
         line = sys.stdin.readline()
 
         while line:
-            pass
+            print(self._get_replay(line.strip()))
+
+            sys.stdout.write("\n> ")
+            sys.stdout.flush()
+            line = sys.stdin.readline()
 
     def _decode(self, enc_input, dec_input):
-        pass
+        if type(dec_input) is np.ndarray:
+            dec_input = dec_input.tolist()
+        
+        input_len = int(math.ceil((len(enc_input)+1)*1.5))
+
+        enc_input, dec_input, _ = self.dialog.transform(enc_input, dec_input,
+                                                        input_len,
+                                                        FLAGS.max_decode_len)
+
+        return self.model.predict(self.sess, [enc_input], [dec_input])
     
     def _get_replay(self, msg):
         enc_input = self.dialog.tokenizer(msg)
@@ -37,12 +50,22 @@ class Chatbot:
 
         curr_seq = 0
         for i in range(FLAGS.max_decode_len):
-            pass
+            output = self._decode(enc_input, dec_input)
+            if self.dialog.is_eos(output[0][curr_seq]):
+                break
+            elif self.dialog.is_defined(output[0][curr_seq]) is not True:
+                dec_input.append(output[0][curr_seq])
+                curr_seq += 1
+        
+        reply = self.dialog.decode([dec_input], True)
 
-    def main(_):
-        print("initialzing dialog system")
+        return reply
 
-        chatbot = Chatbot(FLAGS.voc_path, FLAGS.train_dir)
+def main(_):
+    print("initialzing dialog system")
+
+    chatbot = Chatbot(FLAGS.voc_path, FLAGS.train_dir)
+    chatbot.run()
 
 if __name__ == "__main__":
     tf.app.run()

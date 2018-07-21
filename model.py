@@ -76,3 +76,17 @@ class Seq2Seq:
                                 self.enc_input: enc_input,
                                 self.dec_input: dec_input,
                                 self.targets: targets})
+
+    def predict(self, session, enc_input, dec_input):
+        return session.run(self.outputs,
+                            feed_dict={self.enc_input: enc_input,
+                                        self.dec_input: dec_input})
+
+    def test(self, session, enc_input, dec_input, targets):
+        prediction_check = tf.equal(self.outputs, self.targets)
+        accuracy = tf.reduce_mean(tf.cast(prediction_check, tf.float32))
+
+        return session.run([self.targets, self.outputs, accuracy],
+                           feed_dict={self.enc_input: enc_input,
+                                      self.dec_input: dec_input,
+                                      self.targets: targets})

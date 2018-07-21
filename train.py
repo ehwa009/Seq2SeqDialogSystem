@@ -37,8 +37,32 @@ def train(dialog, batch_size=100, epoch=100):
     print("training complete.")
 
 def test(dialog, batch_size=100):
-    pass
+    print("predition test")
 
+    model = Seq2Seq(dialog.vocab_size)
+
+    with tf.Session() as sess:
+        ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
+        print("reading trained model..", ckpt.model_checkpoint_path)
+        model.saver.restore(sess, ckpt.model_checkpoint_path)
+
+        enc_input, dec_input, targets = dialog.next_batch(batch_size)
+
+        expect, output, accuracy = model.test(sess, enc_input, dec_input, targets)
+
+        expect = dialog.decode(expect)
+        output = dialog.decode(output)
+
+        pick = random.randrange(0, len(expect)/2)
+        input = dialog.decode([dialog.examples[pick*2]], True)
+        expect = dialog.decode([dialog.examples[pick*2+1]], True)
+        output = dialog.cut_eos(output[pick])
+
+        print("\naccuracy:", accuracy)
+        print("result")
+        print("     input:", input)
+        print("     expect:", expect)
+        print("     predict:", ' '.join(output))
 
 def main(_):
     dialog = Dialog()
@@ -49,7 +73,7 @@ def main(_):
     if FLAGS.train:
         train(dialog, batch_size=FLAGS.batch_size, epoch=FLAGS.epoch)
     elif FLAGS.test:
-        pass
+        test(dialog, batch_size=FLAGS.batch_size)
 
 if __name__ == "__main__":
     tf.app.run()
